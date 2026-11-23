@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MCC Counselling Online Test</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--card:#fff;--tx:#1c2430;--mu:#5d6b7c;--ac:#1f6feb;--ok:#1a7f37;--bad:#c62828;--bd:#d8dee6;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12161c;--card:#1b222b;--tx:#e6ebf1;--mu:#9aa7b6;--ac:#5b9dff;--ok:#4cc26a;--bad:#ff6b6b;--bd:#2d3744;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#12161c;--card:#1b222b;--tx:#e6ebf1;--mu:#9aa7b6;--ac:#5b9dff;--ok:#4cc26a;--bad:#ff6b6b;--bd:#2d3744;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:8px 0;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+h1{font-size:1.25rem;margin:0}h2{font-size:1.1rem;margin:24px 0 8px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.q{font-weight:600;margin:0 0 8px}.src{font-size:.78rem;color:var(--mu)}
+label{display:block;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;margin:6px 0;cursor:pointer}
+label:has(input:checked){border-color:var(--ac)}
+label.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent)}
+label.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,transparent)}
+button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;cursor:pointer}
+button.alt{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+textarea{width:100%;min-height:90px;border:1px solid var(--bd);border-radius:8px;padding:8px;background:var(--bg);color:var(--tx);font:inherit;box-sizing:border-box}
+.model{display:none;margin-top:8px;padding:10px;border-left:3px solid var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent);font-size:.92rem}
+.show .model{display:block}
+#res{font-size:1.1rem;font-weight:700}
+#timer{font-variant-numeric:tabular-nums;font-weight:700}
+</style></head><body><main>
+<header class="top"><h1>MCC Counselling Online Test</h1><span id="timer">60:00</span></header>
+<p class="src">Based on the NEET-UG 2026, NEET-MDS 2026, NEET-PG 2026 and NEET-SS 2025 MCC information bulletins. Part A: MCQs (1 mark each). Part B: written answers (self-check against model points).</p>
+<h2>Part A: Multiple choice</h2><div id="mcq"></div>
+<h2>Part B: Written questions</h2><div id="wr"></div>
+<div class="card"><button id="sub">Submit test</button> <button class="alt" id="rst">Restart</button><p id="res"></p></div>
+</main>
+<script>
+// [question, [options], correctIndex, source]
+const M=[
+["How many rounds of online counselling are held for the 15% All India Quota seats in NEET-UG counselling 2026?",["Two","Three","Four","Five"],2,"UG"],
+["Which rounds make up UG AIQ counselling?",["Round 1, Round 2, Mop-up, Final","Round 1, Round 2, Round 3, Stray Vacancy Round","Round 1 and Round 2 only","Round 1, Special Round, Stray Round"],1,"UG"],
+["How many rounds of AIQ counselling are conducted for NEET-PG (MD/MS) 2026?",["Two","Three","Four","Six"],2,"PG"],
+["How many rounds of AIQ counselling are conducted for NEET-MDS 2026?",["Two","Three","Four","Five"],2,"MDS"],
+["How many rounds of SS AIQ online counselling are held for NEET-SS (DM/MCh/DrNB SS)?",["One","Two","Three","Four"],1,"SS"],
+["The MCC conducts counselling on behalf of which body?",["NMC","NBEMS","DGHS, MoHFW","UGC"],2,"All"],
+["What share of MBBS/BDS seats of participating states is filled through the All India Quota in NEET-UG counselling?",["10%","15%","50%","85%"],1,"UG"],
+["What share of PG (MD/MS) seats of contributing states is filled through the All India Quota?",["15%","27%","50%","100%"],2,"PG"],
+["Reservation for Scheduled Tribes in AIQ seats is:",["5%","7.5%","10%","15%"],1,"UG/PG/MDS"],
+["Reservation for OBC (Non-Creamy Layer) in AIQ seats is:",["10%","15%","22.5%","27%"],3,"UG/PG/MDS"],
+["Non-refundable registration fee for an unreserved UG AIQ candidate is:",["Rs 500","Rs 1,000","Rs 5,000","Rs 10,000"],1,"UG"],
+["Refundable security deposit for an unreserved/EWS UG AIQ candidate is:",["Rs 5,000","Rs 10,000","Rs 25,000","Rs 2,00,000"],1,"UG"],
+["An SC/ST/OBC/PwD candidate registering for UG AIQ pays a total of:",["Rs 5,500","Rs 11,000","Rs 5,000","Rs 10,500"],0,"UG"],
+["Registration fee plus refundable security deposit for Deemed Universities (UG) at registration is:",["Rs 5,000 + Rs 2,00,000","Rs 1,000 + Rs 10,000","Rs 5,000 + Rs 25,000","Rs 500 + Rs 5,000"],0,"UG"],
+["An unreserved PG/MDS AIQ candidate pays registration fee and security deposit of:",["Rs 1,000 + Rs 25,000","Rs 1,000 + Rs 10,000","Rs 500 + Rs 25,000","Rs 5,000 + Rs 25,000"],0,"PG/MDS"],
+["An SC candidate opting for PG/MDS AIQ pays:",["Rs 500 + Rs 10,000","Rs 1,000 + Rs 10,000","Rs 500 + Rs 25,000","Rs 5,000 + Rs 10,000"],0,"PG/MDS"],
+["NEET-SS counselling fee structure is:",["Rs 5,000 registration + Rs 2,00,000 refundable security","Rs 1,000 + Rs 25,000","Rs 500 + Rs 10,000","Rs 10,000 total"],0,"SS"],
+["What happens to the security deposit if a candidate allotted a seat does not join?",["It is refunded","It is forfeited","It is carried to next year","It is halved"],1,"All"],
+["When does the refund process begin?",["After each round","After Round 1 only","After all rounds of counselling are completed","Immediately on request"],2,"All"],
+["Which round offers free exit?",["Round 1","Round 2","Round 3","Stray Vacancy Round"],0,"UG/PG/MDS"],
+["Candidates who join in Round 3 of AIQ:",["Can resign and join Stray Round","Cannot resign and take part in further rounds","Get their deposit refunded at once","Can upgrade freely"],1,"UG/MDS"],
+["Offline resignation of a seat in UG counselling is:",["Permitted","Permitted only in Round 1","Not permitted; resignation is online only","Permitted with a notary"],2,"UG"],
+["In NEET-SS counselling, who is eligible for Round 2 allotment?",["Only candidates who joined in Round 1","Registered candidates who got no seat in Round 1","Only in-service candidates","All candidates automatically"],1,"SS"],
+["Where must NEET-SS counselling applications be submitted?",["Any state website","By post","Only online on the MCC website","At the institute"],2,"SS"],
+["A candidate submitting more than one NEET-SS registration form will be:",["Warned","Charged extra","Debarred and candidature cancelled","Given the better rank"],2,"SS"],
+["NRI candidates file an affidavit on stamp paper of value:",["Rs 10","Rs 50","Rs 100","Rs 500"],2,"PG/UG"],
+["Of Deemed University seats, what share is allocated to NRI candidates?",["5%","10%","15%","25%"],2,"UG/PG/MDS"],
+["Which roster is applied on 50% AIQ seats in PG counselling?",["100-point","200-point","1000-point","3200-point"],3,"PG"],
+["Each counselling round is:",["A continuation of the previous round with the same rules","A separate round with its own rules","Optional","Run by the states"],1,"PG/MDS"],
+["From a duplicate or excess receipt refund, the custodian deducts:",["Nothing","50% of registration fee or Rs 500, whichever is less","Entire fee","Rs 5,000"],1,"UG"],
+["In UG counselling 2026, Freeze candidates are those who:",["Want to upgrade","Are satisfied with the allotted seat and will not upgrade","Got no seat","Resigned"],1,"UG"],
+["Float candidates are those who:",["Are willing to upgrade in the next round","Will not join","Are NRIs only","Have no documents"],0,"UG"],
+["Float candidates have documents verified:",["Physically at the institute","By the state","Online by the institute nodal officer","By NBEMS"],2,"UG"],
+["Freeze candidates who want to join must:",["Join online","Visit the allotted institute physically","Wait for Round 3","Email MCC"],1,"UG"],
+["Until 2025, upgradation required candidates to:",["Report physically at the allotted institute with originals","Pay an extra fee","Apply to the state","Skip document checks"],0,"UG"],
+["Upgradation facility is available up to:",["Round 1","Round 2","Round 3","Stray Vacancy Round"],2,"UG"],
+["The four-round AIQ scheme was approved by the Supreme Court in:",["Nihila P.P. v. MCC (16.12.2021)","Sandeep v. UoI","Sharwan Kumar v. DGHS only","Ashish Ranjan v. UoI"],0,"UG"],
+["After completion of Round 2, AIQ seats:",["Revert to states","Are not reverted to states","Are cancelled","Go to NRI quota"],1,"UG"],
+["A candidate listed as allotted in a state list and the AIQ list is:",["Given priority","Eliminated from the All India Stray Vacancy Round","Refunded","Moved to Round 1"],1,"UG"],
+["Who becomes eligible for further process after registration?",["All registrants","Only candidates who paid the full fee","Only SC/ST","Only Float"],1,"UG"],
+["Correct order of UG counselling steps:",["Allotment, registration, choices","Registration and fee, choice filling, seat allotment","Choices, allotment, fee","Fee, allotment, choices"],1,"UG"],
+["Mandatory documents are uploaded:",["Every round","Once for all rounds","Only in Round 3","Only by Float"],1,"UG"],
+["Candidates are advised to upload documents within about:",["2-3 days of final allotment result","24 hours","30 days","After joining"],0,"UG"],
+["For a Freeze candidate with a discrepancy in documents, admission is:",["Confirmed","Deferred","Cancelled","Upgraded"],2,"UG"],
+["Anomalies flagged in uploaded documents include:",["Blurred copies and incorrect certificates","Only late fee","Only photo size","None"],0,"UG"],
+["If no seat is allotted in a round, the candidate:",["Is debarred","Becomes eligible for the next round as per criteria","Loses fee","Must pay again"],1,"UG"],
+["UG bulletin covers which courses?",["MD/MS","MBBS/BDS/B.Sc. Nursing","DM/MCh","MDS"],1,"UG"],
+["Annexure 9 of the UG bulletin gives eligibility criteria for:",["BHU","AMU","AIIMS","JIPMER Puducherry and Karaikal"],3,"UG"],
+["Which UG chapter covers the Armed Forces Medical College?",["Chapter 12","Chapter 7","Chapter 3","Chapter 17"],0,"UG"],
+["UG Chapter 3 deals with:",["NRI candidates","PwBD","AIIMS","Refund policy"],0,"UG"],
+["UG Chapter 4 deals with:",["Deemed Universities","Persons with Benchmark Disabilities","ESIC","JIPMER"],1,"UG"],
+["Annexure 5 in the UG bulletin is the proforma for:",["SC/ST certificate","OBC-NCL certificate","EWS certificate","PwBD certificate"],2,"UG"],
+["Annexure 4 in the UG bulletin is the proforma for:",["SC/ST certificate","OBC-NCL certificate","EWS certificate","Domicile"],1,"UG"],
+["Offline admission or resignation is:",["Accepted","Not accepted; colleges may face legal action","Accepted in Round 3","Accepted with a letter"],1,"PG"],
+["A seat vacated by offline resignation is:",["Offered in the next round","Not taken in the next round","Given to the state","Refunded"],1,"PG"],
+["Does MCC send communication directly to candidates?",["Yes, by SMS","Yes, by post","No; check the website regularly","Only by phone"],2,"PG"],
+["Claims by agents of guaranteed seats are:",["Valid","Fraud risk; there is no direct entry","Allowed for NRIs","MCC-approved"],1,"PG"],
+["OTPs are sent to the mobile/email used for registration on:",["State site","NBE website","College site","AIIMS"],1,"PG"],
+["Candidates with an international number must give:",["Nothing","An alternative Indian number","A passport","A landline"],1,"PG"],
+["Online eligibility certificate for PwD choices is issued by:",["MCC","NBEMS","A designated Medical Assessment Board","The college"],2,"PG"],
+["In Round 1, candidates are shown:",["Virtual vacancies","Clear-cut vacancies only","All seats","No seats"],1,"PG"],
+["Clear-cut vacancies are:",["Seats not allotted in Round 1","Seats vacated by upgraders","Reserved seats","NRI seats"],0,"PG"],
+["A virtual vacancy is:",["A cancelled seat","A Round 1 seat of a candidate opting for upgradation","A management seat","An unfilled DNB seat"],1,"PG"],
+["A virtual-vacancy seat is allotted in Round 2 only if:",["MCC decides","The Round 1 allottee vacates or upgrades","The state agrees","Fee is paid"],1,"PG"],
+["Once Round 2 starts, which rules apply?",["Round 1 rules","Round 2 rules","Both","Stray rules"],1,"PG"],
+["MCC responsibility for college fee structure:",["Full","Shared","None; candidates should confirm beforehand","Refunds it"],2,"PG"],
+["Interpretation of ambiguity in rules rests with:",["Courts only","MCC, DGHS (final and binding)","Colleges","States"],1,"PG"],
+["Admission or resignation is valid only if generated via:",["Email","Intra-MCC portal by college authorities","Letter","Phone"],1,"PG"],
+["Annexure 7 of the PG bulletin is:",["AFMS Surety Bond Format","Court orders","OBC proforma","PwD guidelines"],0,"PG"],
+["Annexure 6 of the PG bulletin is:",["Relevant Court Orders","EWS proforma","Help desk","Assessment boards"],0,"PG"],
+["PG bulletin Chapter 10 covers:",["Deemed Universities","Diplomate of National Board (DNB)","NRI","AFMS"],1,"PG"],
+["PG counselling covers:",["MD/MS/Diploma/PG DNB","MBBS only","BDS only","DM/MCh"],0,"PG"],
+["MDS AIQ pool includes 50% seats of:",["BHU, AMU and DU/Central Institutes","Only BHU","Only AMU","None"],0,"MDS"],
+["Share of BHU seats in the MDS AIQ pool:",["15%","25%","50%","100%"],2,"MDS"],
+["MDS bulletin Chapter 10 covers:",["AFMC","BHU","DU","NRI"],0,"MDS"],
+["MDS Round 3 and Stray Vacancy Round are conducted:",["By states","Under AIQ by MCC","By NBEMS","By NMC"],1,"MDS"],
+["SS rank letters are downloaded from:",["MCC","NBE official website","State site","AIIMS"],1,"SS"],
+["SS Round 2 is a(n):",["Registration round","Upgradation round","Final mop-up","Free exit only"],1,"SS"],
+["To upgrade in SS Round 2, a candidate must:",["Do nothing","Do fresh choice filling","Pay again","Resign"],1,"SS"],
+["SS candidate who registered in Round 1 but got no seat:",["Must register again","Need not register again","Is debarred","Loses deposit"],1,"SS"],
+["SS candidate who did not report in Round 1 must:",["Do nothing","Register again with full fees for Round 2","Wait for next year","Appeal to NBE"],1,"SS"],
+["SS security deposit is refunded to:",["Any account","The account used for payment","Cash","Cheque"],1,"SS"],
+["Total SS amount paid at registration:",["Rs 2,00,000","Rs 2,05,000","Rs 5,000","Rs 25,000"],1,"SS"],
+["Registering for NEET-SS counselling gives:",["A guaranteed seat","No automatic right to a seat","Rank improvement","Fee waiver"],1,"SS"],
+["Requests to change registration information are:",["Accepted anytime","Not entertained by MCC","Free","Allowed once"],1,"SS"],
+["The official counselling website is:",["www.mcc.nic.in","www.nmc.org.in","www.nbe.edu.in","www.aiims.edu"],0,"SS"],
+["Applications via any other mode are:",["Accepted","Summarily rejected","Held","Reviewed"],1,"SS"],
+["MCC counselling before the refund process may be queried by:",["Email","Phone","Neither; refund queries are not entertained before all rounds end","Both"],2,"PG/UG"],
+["Stray Vacancy Round for 100% Deemed University seats is conducted by:",["The universities","MCC online","States","NMC"],1,"UG"],
+["UG AIQ also includes 15% seats of:",["DU/IP University (VMMC, ABVIMS, ESIC Dental)","Only state colleges","Private colleges","None"],0,"UG"],
+["Round 1 allows:",["Free exit","No exit","Forfeiture","Resignation fee"],0,"UG/PG/MDS"],
+["Consequence of providing incorrect information at registration:",["Warning","Seat may be cancelled and deposit forfeited","Nothing","Extra marks"],1,"SS"],
+["Which statement is true of SS FAQs?",["Optional","Mandatory; candidates deemed to have read them","Only for NRIs","For colleges"],1,"SS"],
+["DNB is covered in which PG chapter?",["Chapter 10","Chapter 4","Chapter 5","Chapter 14"],0,"PG"],
+["Help Desk is Chapter ___ of the PG bulletin.",["12","13","14","9"],2,"PG"],
+["PG Annexure 2 contains:",["AFMS bond","NMC PwD guidelines","EWS proforma","Court orders"],1,"PG"],
+["UG FAQs are in Chapter:",["15","16","17","12"],2,"UG"],
+["UG Chapter 16 covers:",["Application form and fees of counselling","AIQ","Deemed","ESIC"],0,"UG"],
+["UG Chapter 7 covers:",["AIIMS","AFMC","BHU","AMU"],0,"UG"],
+["Which UG chapter covers Jawaharlal Institute (JIPMER) Puducherry and Karaikal?",["Chapter 13","Chapter 11","Chapter 8","Chapter 5"],0,"UG"]
+];
+const W=[
+["Explain the structure of AIQ counselling rounds for NEET-UG 2026 and how it differs from NEET-SS.","UG AIQ (15%): four rounds - Round 1, Round 2, Round 3 and Stray Vacancy Round. NEET-SS AIQ (50%): only two rounds - Round 1 and Round 2. Round 2 in SS is for registered candidates who got no seat in Round 1."],
+["Describe the fee and security deposit structure for UG AIQ, PG/MDS AIQ, Deemed Universities and NEET-SS.","UG AIQ: Rs 1,000 + Rs 10,000 (UR/EWS); Rs 500 + Rs 5,000 (SC/ST/OBC/PwD). PG/MDS AIQ: Rs 1,000 + Rs 25,000 (UR); Rs 500 + Rs 10,000 (SC etc.). Deemed: Rs 5,000 + Rs 2,00,000. SS: Rs 5,000 + Rs 2,00,000. Registration fee is non-refundable; security deposit is refundable."],
+["When is a security deposit forfeited and when is it refunded?","Forfeited if an allotted candidate does not join or surrenders the seat, or if admission is cancelled (for example wrong information or missing documents). Refunded only after all rounds of counselling are completed."],
+["What is free exit, and what restriction applies after joining Round 3?","Round 1 offers free exit: a candidate may leave without penalty. Candidates joining in Round 3 cannot resign and cannot take part in further rounds, so the decision to continue must be taken carefully."],
+["List the reservation categories and percentages applied to AIQ seats.","SC 15%, ST 7.5%, OBC (Non-Creamy Layer) as per Central OBC list 27%, plus EWS and PwBD as per the roster applied by MCC under DoPT norms. PG uses a 3200-point roster."],
+["Differentiate Freeze and Float candidates in UG counselling 2026.","Freeze: satisfied with the seat, no upgradation, joins by visiting the institute physically for document verification and fee. Float: wants to upgrade, gives willingness online, uploads documents for online verification by the institute nodal officer, no physical visit."],
+["What are clear-cut and virtual vacancies?","Clear-cut: seats not allotted in Round 1 (only these are shown in Round 1). Virtual: Round 1 seats of candidates opting for upgradation, shown in Round 2 and allotted only if the Round 1 allottee vacates or upgrades."],
+["Explain the rule on offline admission and resignation.","No offline admission or resignation is accepted. All must be generated online by college authorities through the intra-MCC portal. A seat vacated by offline resignation is not taken in the next round and colleges may face legal action."],
+["Describe how Round 2 works in NEET-SS counselling.","Round 2 is an upgradation round with fresh choice filling. Candidates who did not register or did not report in Round 1 must register again with full fees; registered candidates with no Round 1 seat need not re-register. Result is published and reporting follows."],
+["What warnings does MCC give about agents and communication?","There is no direct entry into any college; agents claiming seats are fraud. MCC sends no direct communication, so candidates must watch the website. OTPs go only to the mobile and email used on the NBE website."]
+];
+const $=s=>document.querySelector(s);let done=false,t0=3600,tm;
+function render(){
+ $("#mcq").innerHTML=M.map((m,i)=>`<div class="card" id="c${i}"><p class="q">${i+1}. ${m[0]}</p>${m[1].map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join("")}<span class="src">Source: ${m[3]} bulletin</span></div>`).join("");
+ $("#wr").innerHTML=W.map((w,i)=>`<div class="card" id="w${i}"><p class="q">W${i+1}. ${w[0]}</p><textarea placeholder="Write your answer"></textarea><div class="model"><b>Model points:</b> ${w[1]}</div></div>`).join("");
+ done=false;$("#res").textContent="";t0=3600;clearInterval(tm);tm=setInterval(tick,1000);tick(true);
+}
+function tick(skip){if(!skip)t0--;const m=String(Math.floor(t0/60)).padStart(2,"0"),s=String(t0%60).padStart(2,"0");$("#timer").textContent=m+":"+s;if(t0<=0&&!done)submit()}
+function submit(){
+ if(done)return;done=true;clearInterval(tm);let sc=0;
+ M.forEach((m,i)=>{const c=$("#c"+i),ls=c.querySelectorAll("label"),sel=c.querySelector("input:checked");
+  ls[m[2]].classList.add("ok");if(sel){if(+sel.value===m[2])sc++;else ls[+sel.value].classList.add("bad")}
+  c.querySelectorAll("input").forEach(x=>x.disabled=true)});
+ document.querySelectorAll("#wr .card").forEach(c=>c.classList.add("show"));
+ $("#res").textContent=`MCQ score: ${sc} / ${M.length} (${Math.round(100*sc/M.length)}%). Compare written answers with the model points.`;
+ $("#res").scrollIntoView({behavior:"smooth"});
+}
+$("#sub").onclick=submit;$("#rst").onclick=render;render();
+</script></body></html>
